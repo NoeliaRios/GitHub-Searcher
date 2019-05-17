@@ -13,48 +13,83 @@ const cantidadDeRepos = 5;
 
 
 
+const input = document.querySelector('#search-form input');
+
+function traerDatos () {
+  // me guardo el valor del input
+  const user = input.value;
+
+  // if (user.length > 0) {
+  // if (user !== '') {
+  if (user) {
+    // hacemos el fetch
+    const url = `https://api.github.com/users/${user}?client_id=${clientId}&client_secret=${clientSecret}`;
+    console.log(url);
+    const urlRepos = `https://api.github.com/users/${user}/repos?per_page=${cantidadDeRepos}&client_id=${clientId}&client_secret=${clientSecret}`;
+    console.log(urlRepos);
+
+    fetch (urlRepos)
+      .then(res => res.json())
+      .then(repos => {
+          //repos son todos los arrays
+        console.log(repos);
+
+        const repositoriesList = [];
+
+        repos.forEach(function (repo) {
+            //repo es cada array
+          const repoName = repo.full_name.split('/')[1];
+          // const repoName = repo.full_name.replace(`${repo.owner.login}/`, '');
+
+          repositoriesList.push(`<a href="${repo.html_url}" target="_blank" class="list-group-item list-group-item-action">${repoName}</a>`);
+        });
 
 
+        //versión con MAP
+        // const repositoriesList = repos.map(function(repo){
+        //     const repoName = repo.full_name.split('/')[1];
+        //     return `<a href="${repo.html_url}" target="_blank" class="list-group-item list-group-item-action">${repoName}</a>`
+        // });
+
+        document
+          .querySelector('#profile .list-group')
+          .innerHTML = repositoriesList.join('');
+      })
+
+    fetch (url)
+      .then(res => res.json())
+      .then(userInfo => {
+        // console.log(userInfo);
+
+        document
+          .querySelector('#profile .card .card-img-top')
+          .src = userInfo.avatar_url;
+        document
+          .querySelector('#profile .card .card-title')
+          .innerHTML = userInfo.login;
+        document
+          .querySelector('#profile .card a')
+          .setAttribute('href', userInfo.html_url);
+        document
+          .querySelector('#profile .card #public-repos')
+          .innerHTML = userInfo.public_repos;
+        document
+          .querySelector('#profile .card #followers')
+          .innerHTML = userInfo.followers;
+        document
+          .querySelector('#profile .card #following')
+          .innerHTML = userInfo.following;
+      })
+    }
+}
+
+// agregamos un listener al boton del formulario
 document
-    .querySelector('#search-form .search-btn')
-    .addEventListener('click', function (e){
-        const user = input.value;
-
-        //validamos el input(tiene que tener contenido)
-        // if(user.length>0){
-        // if(user!== ''){
-        if (user){
-
-            const url = `https://api.github.com/users/${user}?client_id=${clientId}&client_secret=${clientSecret}`;
-            const urlRepos = `https://api.github.com/users/${user}/repos?per_page=${cantidadDeRepos}&sort=${reposSort}&client_id=${clientId}&client_secret=${clientSecret}`;
-
-            fetch(urlRepos)
-                .then( res => res.json())
-                .then (repos =>{
-                    console.log(repos);
-
-                    const repositoriesList = [];
-
-                    repos.forEach(function(repos){
-                        repositoriesList.push(`<a href="${repo.html_url}" target="_blank" class="list-group-item list-group-item-action">${repo.fullName}</a>`)
-                    });
-
-                    document.querySelector('#profile .list-group').innerHTML = repositoriesList.join('');
-                })
-
-            fetch(url)
-                .then(res => res.json())
-                .then(userInfo =>{
-                    console.log(userInfo)
-
-                    document.querySelector('#profile .card .card-img-top').src = userInfo.avatar_url;
-                    document.querySelector('#profile .card .card.title').innerHTML = user.login;
-                    document.querySelector('#profile .card a').setAttribute('href', userInfo.html_url);
-                    // document.querySelector('#profile .card #repos').innerHTML = userInfo.
-                });
-
-        }
-    });
+  .querySelector('#search-form')
+  .addEventListener('submit', function (e) {
+    e.preventDefault();
+    traerDatos();
+  });
 
 
 
